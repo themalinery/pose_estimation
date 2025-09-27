@@ -1,9 +1,9 @@
 ---
-title: {{Pose Estimation}}
-emoji: {{emoji}}
-colorFrom: {{white}}
+title: {{"Pose Estimation"}}
+emoji: {{"❤︎"}}
+colorFrom: {{indigo}}
 colorTo: {{pink}}
-sdk: {{sdk}}
+sdk: {{gradio}}
 sdk_version: "{{sdkVersion}}"
 app_file: app.py
 pinned: false
