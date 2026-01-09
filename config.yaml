@@ -1,9 +1,9 @@
-task: "body_pose_estimation"  # Options: "body_pose_estimation", "hand_pose_estimation"
-input_path: "D:\\youtube\\brasov 2025\\PXL_20250920_091812417.TS.mp4"   #"D:\\youtube\\geneva-august 2025\\ladyhand_part1.mp4"  # #
+task: "hand_pose_estimation"  # Options: "body_pose_estimation", "hand_pose_estimation"
+input_path: "D:\\youtube\\geneva-august 2025\\ladyhand_part1.mp4"  #"D:\\youtube\\brasov 2025\\PXL_20250920_091812417.TS.mp4"
 output_dir: ./results
 output_name: "lady.mp4"
 frames_dir: ./frames
-drawing:
-  radius: 20
+drawing_settings:
+  radius: 50
   color_landmarks: [179, 124, 247]  # BGR
   color_connections: [225, 225, 225]  # BGR
