@@ -109,8 +109,7 @@ def process_video(
             process_body_pose_estimation(
                 video_file, 
                 str(frames_dir),
-                landmark_color=landmark_color_tuple,
-                connection_color=connection_color_tuple
+                drawing_settings
             )
         else:
             raise ValueError(f"Unknown task type: {task_type}")
