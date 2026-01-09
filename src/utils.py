@@ -9,6 +9,7 @@ import torch
 import numpy as np
 import supervision as sv
 from PIL import Image
+import yaml
 from transformers import AutoProcessor, RTDetrForObjectDetection, VitPoseForPoseEstimation, infer_device
 from src.body_pose.vertex_annotator_heart import VertexAnnotatorHeart
 
@@ -115,6 +116,12 @@ def process_body_pose_estimation(path_video, output_folder):
         path_video (str): Path to input video file.
         output_folder (str): Folder to save annotated frames.
     """
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'pose_estimation/config.yaml')
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    hand_cfg = config.get('drawing', {})
+
+
     # Initialize device and models
     device = infer_device()
     
@@ -172,8 +179,8 @@ def process_body_pose_estimation(path_video, output_folder):
             scores = torch.stack([pose_result['scores'] for pose_result in image_pose_result]).cpu().numpy()
             
             # Set up annotators
-            color_edge_annotator = sv.Color.from_hex("#e1e1e1")
-            color_vertex_annotator = sv.Color.from_hex('#ffc0cb')
+            color_edge_annotator = sv.Color.from_bgr_tuple(hand_cfg.get('color_connections'))
+            color_vertex_annotator = sv.Color.from_bgr_tuple(hand_cfg.get('color_landmarks'))
             
             key_points = sv.KeyPoints(
                 xy=xy, confidence=scores
@@ -185,7 +192,7 @@ def process_body_pose_estimation(path_video, output_folder):
             )
             vertex_annotator = VertexAnnotatorHeart(
                 color=color_vertex_annotator,
-                radius=10
+                radius=hand_cfg.get('radius')
             )
             
             annotated_frame = edge_annotator.annotate(

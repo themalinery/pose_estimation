@@ -10,7 +10,7 @@ def load_hand_drawing_config():
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.yaml')
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
-    hand_cfg = config.get('hand_drawing', {})
+    hand_cfg = config.get('drawing', {})
     radius = hand_cfg.get('radius', 20)
     color_landmarks = tuple(hand_cfg.get('color_landmarks', [179, 124, 247]))
     color_connections = tuple(hand_cfg.get('color_connections', [225, 225, 225]))
@@ -112,28 +112,44 @@ _HAND_CONNECTION_STYLE = {
 }
 
 
-def get_default_hand_landmark_style() -> Mapping[int, DrawingSpec]:
-    """Returns the default hand landmark drawing style.
-
-    Returns:
-        A mapping from each hand landmark to the default drawing spec.
-    """
+def get_default_hand_landmark_style(color: Tuple[int, int, int] | None = None) -> Mapping[int, DrawingSpec]:
     hand_landmark_style = {}
-    for k, v in _HAND_LANDMARK_STYLE.items():
-        for landmark in k:
-            hand_landmark_style[landmark] = v
+    for group, spec in _HAND_LANDMARK_STYLE.items():
+        for landmark in group:
+            if color is None:
+                hand_landmark_style[landmark] = spec
+            else:
+                thickness = getattr(spec, "thickness", _THICKNESS_DOT)
+                circle_radius = getattr(spec, "circle_radius", _RADIUS)
+                hand_landmark_style[landmark] = DrawingSpec(
+                    color=tuple(color), thickness=thickness, circle_radius=circle_radius
+                )
     return hand_landmark_style
 
 
-def get_default_hand_connection_style(
+def get_default_hand_connection_style(color: Tuple[int, int, int] | None = None
 ) -> Mapping[Tuple[int, int], DrawingSpec]:
     """Returns the default hand connection drawing style.
 
+    If `color` is provided it will be used for all connections instead of the
+    module-level `COLOR_CONNECTIONS` value. The function preserves other
+    DrawingSpec attributes (thickness) from the template specs defined in
+    `_HAND_CONNECTION_STYLE`.
+
+    Args:
+        color: Optional BGR color tuple (B, G, R) to override connection color.
+
     Returns:
-        A mapping from each hand connection to the default drawing spec.
+        A mapping from each hand connection (pair of landmarks) to the drawing spec.
     """
     hand_connection_style = {}
     for k, v in _HAND_CONNECTION_STYLE.items():
         for connection in k:
-            hand_connection_style[connection] = v
+            if color is None:
+                hand_connection_style[connection] = v
+            else:
+                thickness = getattr(v, 'thickness', _THICKNESS_FINGER)
+                hand_connection_style[connection] = DrawingSpec(
+                    color=tuple(color), thickness=thickness
+                )
     return hand_connection_style

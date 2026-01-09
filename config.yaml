@@ -1,18 +1,9 @@
-# Configuration file for pose estimation project
-# Add your configuration parameters below
-
 task: "body_pose_estimation"  # Options: "body_pose_estimation", "hand_pose_estimation"
-
-input_path: "D:\\youtube\\brasov 2025\\PXL_20250920_091812417.TS.mp4" #"D:\\youtube\\geneva-august 2025\\ladyhand_part1.mp4"
-
+input_path: "D:\\youtube\\brasov 2025\\PXL_20250920_091812417.TS.mp4"   #"D:\\youtube\\geneva-august 2025\\ladyhand_part1.mp4"  # #
 output_dir: ./results
-
 output_name: "lady.mp4"
-
 frames_dir: ./frames
-
-# Hand drawing parameters
-hand_drawing:
+drawing:
   radius: 20
   color_landmarks: [179, 124, 247]  # BGR
   color_connections: [225, 225, 225]  # BGR
