@@ -129,7 +129,7 @@ def process_video(
 
 # Create Gradio interface
 with gr.Blocks(title="Pose Estimation") as demo:
-    gr.Markdown("# Pose Estimation Web App")
+    gr.Markdown("# Pose Estimation")
     gr.Markdown("Upload a video and process it with hand or body pose estimation")
     
     with gr.Row():
