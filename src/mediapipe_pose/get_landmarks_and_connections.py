@@ -158,16 +158,17 @@ def get_default_hand_landmark_style(
 
 def get_default_hand_connection_style(
     color: Tuple[int, int, int] | None = None,
+    thickness: int | None = None,
 ) -> Mapping[Tuple[int, int], DrawingSpec]:
     """Returns the default hand connection drawing style.
 
     If `color` is provided it will be used for all connections instead of the
-    module-level `COLOR_CONNECTIONS` value. The function preserves other
-    DrawingSpec attributes (thickness) from the template specs defined in
-    `_HAND_CONNECTION_STYLE`.
+    module-level `COLOR_CONNECTIONS` value. If `thickness` is provided, it will
+    override the default thickness for connections.
 
     Args:
         color: Optional BGR color tuple (B, G, R) to override connection color.
+        thickness: Optional thickness for connections.
 
     Returns:
         A mapping from each hand connection (pair of landmarks) to the drawing spec.
@@ -175,11 +176,12 @@ def get_default_hand_connection_style(
     hand_connection_style = {}
     for k, v in _HAND_CONNECTION_STYLE.items():
         for connection in k:
-            if color is None:
+            if color is None and thickness is None:
                 hand_connection_style[connection] = v
             else:
-                thickness = getattr(v, "thickness", _THICKNESS_FINGER)
+                conn_color = tuple(color) if color is not None else getattr(v, "color", COLOR_CONNECTIONS)
+                conn_thickness = thickness if thickness is not None else getattr(v, "thickness", _THICKNESS_FINGER)
                 hand_connection_style[connection] = DrawingSpec(
-                    color=tuple(color), thickness=thickness
+                    color=conn_color, thickness=conn_thickness
                 )
     return hand_connection_style

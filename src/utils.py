@@ -70,7 +70,7 @@ def process_hand_pose_estimation(path_video, output_folder, drawing_settings):
     mp_hands = mp.solutions.hands
 
     landmark_annotations = get_default_hand_landmark_style(drawing_settings.get("color_landmarks"), drawing_settings.get("radius"))
-    connections_annotations = get_default_hand_connection_style(drawing_settings.get("color_connections"))
+    connections_annotations = get_default_hand_connection_style(drawing_settings.get("color_connections"), drawing_settings.get("thickness"))
 
     # Initialize video capture
     vidcap = cv2.VideoCapture(path_video)
@@ -224,7 +224,7 @@ def process_body_pose_estimation(path_video, output_folder, drawing_settings):
 
             key_points = sv.KeyPoints(xy=xy, confidence=scores)
 
-            edge_annotator = sv.EdgeAnnotator(color=color_edge_annotator, thickness=1)
+            edge_annotator = sv.EdgeAnnotator(color=color_edge_annotator, thickness=drawing_settings.get("thickness"))
             vertex_annotator = VertexAnnotatorHeart(
                 color=color_vertex_annotator, radius=drawing_settings.get("radius")
             )

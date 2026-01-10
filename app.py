@@ -58,6 +58,7 @@ def process_video(
     landmark_radius,
     landmark_color,
     connection_color,
+    connection_thickness,
 ):
     """
     Process video with pose estimation and return output video path.
@@ -68,6 +69,7 @@ def process_video(
         landmark_radius: Radius size for landmarks (int)
         landmark_color: Color for landmarks (hex string or tuple)
         connection_color: Color for connections (hex string or tuple)
+        connection_thickness: Thickness for connections (int)
     
     Returns:
         Path to output video file
@@ -93,7 +95,8 @@ def process_video(
         drawing_settings = {
             "color_landmarks": landmark_color_tuple,
             "color_connections": connection_color_tuple,
-            "radius": int(landmark_radius)
+            "radius": int(landmark_radius),
+            "thickness": int(connection_thickness)
         }
         
         print(f"Drawing settings: {drawing_settings}")
@@ -161,6 +164,15 @@ with gr.Blocks(title="Pose Estimation") as demo:
                 label="Connection Color (BGR)"
             )
             
+            connection_thickness = gr.Number(
+                value=5,
+                label="Connection Thickness",
+                minimum=1,
+                maximum=20,
+                step=1,
+                precision=0
+            )
+            
             video_upload = gr.File(
                 label="Upload Video",
                 file_types=["video"],
@@ -195,7 +207,7 @@ with gr.Blocks(title="Pose Estimation") as demo:
     )
     
     # Handle processing
-    def process_and_update(video, task, radius, land_color, conn_color):
+    def process_and_update(video, task, radius, land_color, conn_color, conn_thickness):
         try:
             # Update status
             gr.Info("Processing video... This may take a few minutes.")
@@ -205,7 +217,8 @@ with gr.Blocks(title="Pose Estimation") as demo:
                 task,
                 int(radius),
                 land_color,
-                conn_color
+                conn_color,
+                int(conn_thickness)
             )
             
             gr.Info("Video processing complete!")
@@ -216,7 +229,7 @@ with gr.Blocks(title="Pose Estimation") as demo:
     
     process_button.click(
         fn=process_and_update,
-        inputs=[video_upload, task_dropdown, landmark_radius, landmark_color, connection_color],
+        inputs=[video_upload, task_dropdown, landmark_radius, landmark_color, connection_color, connection_thickness],
         outputs=[video_output, download_button]
     )
 
