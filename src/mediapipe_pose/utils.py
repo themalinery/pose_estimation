@@ -1,10 +1,37 @@
 # @title Default title text
-from mediapipe.framework.formats import landmark_pb2
+try:
+    from mediapipe.framework.formats import landmark_pb2
+except ImportError:
+    # Fallback for environments where mediapipe.framework is not available
+    import mediapipe as mp
+    landmark_pb2 = mp.solutions.hands.HandLandmark.__class__.__module__
+    # Use mp.solutions protobuf types instead
+    from google.protobuf import descriptor_pb2
+    class _LandmarkListProxy:
+        """Proxy class that wraps mediapipe landmark data."""
+        def __init__(self, landmarks=None):
+            self.landmark = landmarks if landmarks else []
+    landmark_pb2 = type('landmark_pb2', (), {'NormalizedLandmarkList': _LandmarkListProxy})()
 
-from mediapipe.python.solutions.drawing_utils import (
-    DrawingSpec,
-    _normalized_to_pixel_coordinates,
-)
+try:
+    from mediapipe.python.solutions.drawing_utils import (
+        DrawingSpec,
+        _normalized_to_pixel_coordinates,
+    )
+except ImportError:
+    # Fallback definitions
+    from dataclasses import dataclass
+    @dataclass
+    class DrawingSpec:
+        color: tuple = (0, 0, 255)
+        thickness: int = 2
+        circle_radius: int = 2
+    
+    def _normalized_to_pixel_coordinates(normalized_x, normalized_y, image_width, image_height):
+        if not (0 <= normalized_x <= 1 and 0 <= normalized_y <= 1):
+            return None
+        return int(normalized_x * image_width), int(normalized_y * image_height)
+
 import cv2
 from typing import List, Mapping, Optional, Tuple, Union
 import numpy as np
