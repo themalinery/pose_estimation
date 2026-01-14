@@ -6,12 +6,7 @@ import tempfile
 import yaml
 from src.utils import (
     create_video_from_images,
-    process_hand_pose_estimation,
     process_body_pose_estimation,
-)
-from src.mediapipe_pose.get_landmarks_and_connections import (
-    get_default_hand_landmark_style,
-    get_default_hand_connection_style,
 )
 
 
@@ -54,18 +49,16 @@ def hex_to_bgr(color_input):
 
 def process_video(
     video_file,
-    task_type,
     landmark_radius,
     landmark_color,
     connection_color,
     connection_thickness,
 ):
     """
-    Process video with pose estimation and return output video path.
+    Process video with body pose estimation and return output video path.
     
     Args:
         video_file: Uploaded video file
-        task_type: "hand_pose_estimation" or "body_pose_estimation"
         landmark_radius: Radius size for landmarks (int)
         landmark_color: Color for landmarks (hex string or tuple)
         connection_color: Color for connections (hex string or tuple)
@@ -101,21 +94,12 @@ def process_video(
         
         print(f"Drawing settings: {drawing_settings}")
         
-        # Process video based on task type
-        if task_type == "hand_pose_estimation":
-            process_hand_pose_estimation(
-                video_file, 
-                str(frames_dir),
-                drawing_settings
-            )
-        elif task_type == "body_pose_estimation":
-            process_body_pose_estimation(
-                video_file, 
-                str(frames_dir),
-                drawing_settings
-            )
-        else:
-            raise ValueError(f"Unknown task type: {task_type}")
+        # Process video with body pose estimation
+        process_body_pose_estimation(
+            video_file, 
+            str(frames_dir),
+            drawing_settings
+        )
         
         # Create video from processed frames
         create_video_from_images(str(frames_dir), str(output_video_path), fps=30)
@@ -130,20 +114,14 @@ def process_video(
 
 
 # Create Gradio interface
-with gr.Blocks(title="Pose Estimation") as demo:
-    gr.Markdown("# Pose Estimation")
-    gr.Markdown("Upload a video and process it with hand or body pose estimation")
+with gr.Blocks(title="Body Pose Estimation") as demo:
+    gr.Markdown("# Body Pose Estimation")
+    gr.Markdown("Upload a video and process it with body pose estimation")
     
     with gr.Row():
         with gr.Column():
             # Input controls
             gr.Markdown("## Input Settings")
-            
-            task_dropdown = gr.Radio(
-                choices=["hand_pose_estimation", "body_pose_estimation"],
-                value="hand_pose_estimation",
-                label="Select Pose Estimation Task"
-            )
             
             landmark_radius = gr.Number(
                 value=20,
@@ -154,14 +132,14 @@ with gr.Blocks(title="Pose Estimation") as demo:
                 precision=0
             )
             
-            landmark_color = gr.ColorPicker(
-                value="#B37CF7",  # Default: (179, 124, 247) in RGB
-                label="Landmark Color (BGR)"
+            landmark_color = gr.Textbox(
+                value="#B37CF7",
+                label="Landmark Color (hex, e.g. #B37CF7)"
             )
             
-            connection_color = gr.ColorPicker(
-                value="#E1E1E1",  # Default: (225, 225, 225) in RGB
-                label="Connection Color (BGR)"
+            connection_color = gr.Textbox(
+                value="#E1E1E1",
+                label="Connection Color (hex, e.g. #E1E1E1)"
             )
             
             connection_thickness = gr.Number(
@@ -207,14 +185,13 @@ with gr.Blocks(title="Pose Estimation") as demo:
     )
     
     # Handle processing
-    def process_and_update(video, task, radius, land_color, conn_color, conn_thickness):
+    def process_and_update(video, radius, land_color, conn_color, conn_thickness):
         try:
             # Update status
             gr.Info("Processing video... This may take a few minutes.")
             
             output_path = process_video(
                 video,
-                task,
                 int(radius),
                 land_color,
                 conn_color,
@@ -229,7 +206,7 @@ with gr.Blocks(title="Pose Estimation") as demo:
     
     process_button.click(
         fn=process_and_update,
-        inputs=[video_upload, task_dropdown, landmark_radius, landmark_color, connection_color, connection_thickness],
+        inputs=[video_upload, landmark_radius, landmark_color, connection_color, connection_thickness],
         outputs=[video_output, download_button]
     )
 
