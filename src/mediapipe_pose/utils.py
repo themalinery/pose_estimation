@@ -3,15 +3,26 @@ try:
     from mediapipe.framework.formats import landmark_pb2
 except ImportError:
     # Fallback for environments where mediapipe.framework is not available
-    import mediapipe as mp
-    landmark_pb2 = mp.solutions.hands.HandLandmark.__class__.__module__
-    # Use mp.solutions protobuf types instead
-    from google.protobuf import descriptor_pb2
-    class _LandmarkListProxy:
+    class _Landmark:
+        """Proxy class that wraps a single landmark."""
+        def __init__(self, x=0, y=0, z=0, visibility=1.0, presence=1.0):
+            self.x = x
+            self.y = y
+            self.z = z
+            self.visibility = visibility
+            self.presence = presence
+        
+        def HasField(self, field_name):
+            return hasattr(self, field_name)
+    
+    class _NormalizedLandmarkList:
         """Proxy class that wraps mediapipe landmark data."""
         def __init__(self, landmarks=None):
             self.landmark = landmarks if landmarks else []
-    landmark_pb2 = type('landmark_pb2', (), {'NormalizedLandmarkList': _LandmarkListProxy})()
+    
+    class landmark_pb2:
+        NormalizedLandmarkList = _NormalizedLandmarkList
+        NormalizedLandmark = _Landmark
 
 try:
     from mediapipe.python.solutions.drawing_utils import (

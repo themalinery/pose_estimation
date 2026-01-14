@@ -1,4 +1,3 @@
-import mediapipe as mp
 import os
 from moviepy import ImageSequenceClip
 from natsort import natsorted
@@ -19,6 +18,24 @@ from transformers import (
     infer_device,
 )
 from src.body_pose.vertex_annotator_heart import VertexAnnotatorHeart
+
+# Import mediapipe with fallback
+try:
+    import mediapipe as mp
+    mp_hands = mp.solutions.hands
+    HAND_CONNECTIONS = mp_hands.HAND_CONNECTIONS
+except (ImportError, AttributeError):
+    # Fallback for newer mediapipe versions without solutions module
+    mp_hands = None
+    # Define hand connections manually
+    HAND_CONNECTIONS = frozenset([
+        (0, 1), (1, 2), (2, 3), (3, 4),  # Thumb
+        (0, 5), (5, 6), (6, 7), (7, 8),  # Index
+        (0, 9), (9, 10), (10, 11), (11, 12),  # Middle
+        (0, 13), (13, 14), (14, 15), (15, 16),  # Ring
+        (0, 17), (17, 18), (18, 19), (19, 20),  # Pinky
+        (5, 9), (9, 13), (13, 17),  # Palm
+    ])
 
 
 def create_video_from_images(folder_path, output_video_file, fps):
@@ -67,7 +84,8 @@ def create_video_from_images(folder_path, output_video_file, fps):
 
 
 def process_hand_pose_estimation(path_video, output_folder, drawing_settings):
-    mp_hands = mp.solutions.hands
+    if mp_hands is None:
+        raise RuntimeError("Hand pose estimation requires mediapipe with solutions module. Please install mediapipe<0.10.8")
 
     landmark_annotations = get_default_hand_landmark_style(drawing_settings.get("color_landmarks"), drawing_settings.get("radius"))
     connections_annotations = get_default_hand_connection_style(drawing_settings.get("color_connections"), drawing_settings.get("thickness"))
@@ -98,7 +116,7 @@ def process_hand_pose_estimation(path_video, output_folder, drawing_settings):
                     draw_landmarks(
                         frame,
                         lm,
-                        mp_hands.HAND_CONNECTIONS,
+                        HAND_CONNECTIONS,
                         landmark_drawing_spec=landmark_annotations,
                         connection_drawing_spec=connections_annotations,
                     )
