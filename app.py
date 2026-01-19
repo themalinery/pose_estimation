@@ -132,14 +132,14 @@ with gr.Blocks(title="Body Pose Estimation") as demo:
                 precision=0
             )
             
-            landmark_color = gr.Textbox(
+            landmark_color = gr.ColorPicker(
                 value="#B37CF7",
-                label="Landmark Color (hex, e.g. #B37CF7)"
+                label="Landmark Color"
             )
             
-            connection_color = gr.Textbox(
+            connection_color = gr.ColorPicker(
                 value="#E1E1E1",
-                label="Connection Color (hex, e.g. #E1E1E1)"
+                label="Connection Color"
             )
             
             connection_thickness = gr.Number(
