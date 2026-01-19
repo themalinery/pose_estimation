@@ -143,10 +143,6 @@ def process_body_pose_estimation(path_video, output_folder, drawing_settings):
         path_video (str): Path to input video file.
         output_folder (str): Folder to save annotated frames.
     """
-    config_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        "pose_estimation/config.yaml",
-    )
 
     # Initialize device and models
     device = infer_device()

@@ -11,23 +11,31 @@ from src.utils import (
 
 
 def hex_to_bgr(color_input):
-    """Convert color to BGR tuple. Handles hex strings, rgb() strings, and tuples."""
+    """Convert color to BGR tuple. Handles hex strings, rgb() strings, rgba() strings, and tuples."""
     try:
         # If it's already a tuple, assume it's RGB and convert to BGR
-        if isinstance(color_input, (tuple, list)) and len(color_input) == 3:
-            r, g, b = color_input
-            return (b, g, r)
+        if isinstance(color_input, (tuple, list)) and len(color_input) >= 3:
+            r, g, b = color_input[:3]
+            return (int(b), int(g), int(r))
         
         # If it's a string, try different formats
         if isinstance(color_input, str):
             color_input = color_input.strip()
             
+            # Handle rgba(r, g, b, a) format
+            if color_input.startswith('rgba'):
+                color_input = color_input.replace('rgba(', '').replace(')', '').strip()
+                parts = [x.strip() for x in color_input.split(',')]
+                if len(parts) >= 3:
+                    r, g, b = int(float(parts[0])), int(float(parts[1])), int(float(parts[2]))
+                    return (b, g, r)
+            
             # Handle rgb(r, g, b) format
             if color_input.startswith('rgb'):
                 color_input = color_input.replace('rgb(', '').replace(')', '').strip()
-                parts = [int(x.strip()) for x in color_input.split(',')]
-                if len(parts) == 3:
-                    r, g, b = parts
+                parts = [x.strip() for x in color_input.split(',')]
+                if len(parts) >= 3:
+                    r, g, b = int(float(parts[0])), int(float(parts[1])), int(float(parts[2]))
                     return (b, g, r)
             
             # Handle hex format #RRGGBB
@@ -81,8 +89,12 @@ def process_video(
         output_video_path = output_dir / "output.mp4"
         
         # Convert colors to BGR tuples
+        print(f"Raw landmark_color input: {landmark_color} (type: {type(landmark_color)})")
+        print(f"Raw connection_color input: {connection_color} (type: {type(connection_color)})")
         landmark_color_tuple = hex_to_bgr(landmark_color)
         connection_color_tuple = hex_to_bgr(connection_color)
+        print(f"Converted landmark_color: {landmark_color_tuple}")
+        print(f"Converted connection_color: {connection_color_tuple}")
         
         # Create drawing settings dictionary from interface input
         drawing_settings = {
@@ -187,6 +199,12 @@ with gr.Blocks(title="Body Pose Estimation") as demo:
     # Handle processing
     def process_and_update(video, radius, land_color, conn_color, conn_thickness):
         try:
+            # Debug: Print what we receive from the UI
+            print(f"=== DEBUG: Values received from UI ===")
+            print(f"land_color: {land_color}")
+            print(f"conn_color: {conn_color}")
+            print(f"==========================================")
+            
             # Update status
             gr.Info("Processing video... This may take a few minutes.")
             
