@@ -18,6 +18,7 @@ from transformers import (
     infer_device,
 )
 from src.body_pose.vertex_annotator_heart import VertexAnnotatorHeart
+from src.body_pose.vertex_annotator_star import VertexAnnotatorStar
 
 # Import mediapipe with fallback
 try:
@@ -239,9 +240,17 @@ def process_body_pose_estimation(path_video, output_folder, drawing_settings):
             key_points = sv.KeyPoints(xy=xy, confidence=scores)
 
             edge_annotator = sv.EdgeAnnotator(color=color_edge_annotator, thickness=drawing_settings.get("thickness"))
-            vertex_annotator = VertexAnnotatorHeart(
-                color=color_vertex_annotator, radius=drawing_settings.get("radius")
-            )
+            
+            # Select vertex annotator based on shape parameter
+            shape = drawing_settings.get("shape", "heart")
+            if shape == "star":
+                vertex_annotator = VertexAnnotatorStar(
+                    color=color_vertex_annotator, radius=drawing_settings.get("radius")
+                )
+            else:
+                vertex_annotator = VertexAnnotatorHeart(
+                    color=color_vertex_annotator, radius=drawing_settings.get("radius")
+                )
 
             annotated_frame = edge_annotator.annotate(
                 scene=frame.copy(), key_points=key_points

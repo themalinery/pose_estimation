@@ -61,6 +61,7 @@ def process_video(
     landmark_color,
     connection_color,
     connection_thickness,
+    landmark_shape,
 ):
     """
     Process video with body pose estimation and return output video path.
@@ -86,7 +87,8 @@ def process_video(
         
         output_dir = temp_dir / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
-        output_video_path = output_dir / "output.mp4"
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        output_video_path = output_dir / f"output_{timestamp}.mp4"
         
         # Convert colors to BGR tuples
         print(f"Raw landmark_color input: {landmark_color} (type: {type(landmark_color)})")
@@ -101,7 +103,8 @@ def process_video(
             "color_landmarks": landmark_color_tuple,
             "color_connections": connection_color_tuple,
             "radius": int(landmark_radius),
-            "thickness": int(connection_thickness)
+            "thickness": int(connection_thickness),
+            "shape": landmark_shape
         }
         
         print(f"Drawing settings: {drawing_settings}")
@@ -163,6 +166,12 @@ with gr.Blocks(title="Body Pose Estimation") as demo:
                 precision=0
             )
             
+            landmark_shape = gr.Dropdown(
+                choices=["heart", "star"],
+                value="heart",
+                label="Landmark Shape"
+            )
+            
             video_upload = gr.File(
                 label="Upload Video",
                 file_types=["video"],
@@ -197,12 +206,13 @@ with gr.Blocks(title="Body Pose Estimation") as demo:
     )
     
     # Handle processing
-    def process_and_update(video, radius, land_color, conn_color, conn_thickness):
+    def process_and_update(video, radius, land_color, conn_color, conn_thickness, shape):
         try:
             # Debug: Print what we receive from the UI
             print(f"=== DEBUG: Values received from UI ===")
             print(f"land_color: {land_color}")
             print(f"conn_color: {conn_color}")
+            print(f"shape: {shape}")
             print(f"==========================================")
             
             # Update status
@@ -213,7 +223,8 @@ with gr.Blocks(title="Body Pose Estimation") as demo:
                 int(radius),
                 land_color,
                 conn_color,
-                int(conn_thickness)
+                int(conn_thickness),
+                shape
             )
             
             gr.Info("Video processing complete!")
@@ -224,7 +235,7 @@ with gr.Blocks(title="Body Pose Estimation") as demo:
     
     process_button.click(
         fn=process_and_update,
-        inputs=[video_upload, landmark_radius, landmark_color, connection_color, connection_thickness],
+        inputs=[video_upload, landmark_radius, landmark_color, connection_color, connection_thickness, landmark_shape],
         outputs=[video_output, download_button]
     )
 
